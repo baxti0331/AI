@@ -1,27 +1,43 @@
-module.exports = async (req, res) => {
-  if (req.method !== 'POST') {
-    return res.status(405).send('Only POST requests allowed');
-  }
+import os
+import asyncio
+from aiohttp import web
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters
 
-  const update = req.body;
+TOKEN = os.getenv("TELEGRAM_TOKEN")
 
-  if (!update.message || !update.message.text) {
-    return res.status(200).send('No message');
-  }
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Привет! Я бот на Render Web Service.")
 
-  const chatId = update.message.chat.id;
-  const userText = update.message.text;
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text
+    await update.message.reply_text(f"Ты написал: {text}")
 
-  // Отправляем обратно тот же текст
-  const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
+async def run_bot():
+    app = ApplicationBuilder().token(TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    await app.run_polling()
 
-  const fetch = require('node-fetch');
+async def handle_root(request):
+    return web.Response(text="Bot is running!")
 
-  await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text: userText }),
-  });
+async def main():
+    # Запускаем бота в фоне
+    bot_task = asyncio.create_task(run_bot())
 
-  res.status(200).send('OK');
-};
+    # Запускаем простой веб-сервер
+    app = web.Application()
+    app.router.add_get('/', handle_root)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, '0.0.0.0', int(os.environ.get("PORT", 10000)))
+    await site.start()
+
+    print("Web server running...")
+
+    # Ожидаем, чтобы приложение не завершилось
+    await bot_task
+
+if __name__ == '__main__':
+    asyncio.run(main())
