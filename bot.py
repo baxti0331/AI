@@ -33,7 +33,7 @@ def save_posts(data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 # Пустая строка для копирайта, добавляй свой username или ссылку сюда
-copyright_text = "\n\n Бот Яратиш @postingbotchat"
+copyright_text = "\n\nБот Яратиш @postingbotchat"
 
 async def send_next_post(app):
     data = load_posts()
