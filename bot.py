@@ -33,7 +33,7 @@ def save_posts(data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 # Пустая строка для копирайта, добавляй свой username или ссылку сюда
-copyright_text = "\n\nБот Яратиш @postingbotchat"
+copyright_text = "\n\nБот Яратиш учун @postingbotchat"
 
 async def send_next_post(app):
     data = load_posts()
@@ -80,7 +80,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if user_id != ADMIN_ID:
         await update.message.reply_animation(
-            animation="https://system365.pro/wp-content/uploads/2020/11/funkygoose-13.gif",
+            animation="https://i.pinimg.com/originals/bd/44/d9/bd44d9671403e0a74a16db7cc4f58f34.gif",
             caption=(
                 "🔒 Упс! К сожалению, у тебя нет доступа к этому боту.\n\n"
                 "Если нужен доступ или есть вопросы — пиши сюда: @baxti_pm"
