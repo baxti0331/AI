@@ -24,16 +24,13 @@ WAITING_TARGET = 2
 
 def load_posts():
     if not os.path.exists(POSTS_FILE):
-        return {"posts": [], "repeat_interval": 0, "current_index": 0, "targets": []}
+        return {"posts": [], "repeat_interval": 0, "targets": []}
     with open(POSTS_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
 
 def save_posts(data):
     with open(POSTS_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
-
-# Пустая строка для копирайта, добавляй свой username или ссылку сюда
-copyright_text = "\n\nБот Яратиш учун @postingbotchat"
 
 async def send_next_post(app):
     data = load_posts()
@@ -50,21 +47,19 @@ async def send_next_post(app):
         for chat_id in targets:
             try:
                 if post["type"] == "text":
-                    await app.bot.send_message(chat_id, post["content"] + copyright_text)
+                    await app.bot.send_message(chat_id, post["content"])
                 elif post["type"] == "photo":
-                    caption = post.get("caption", "") + copyright_text
-                    await app.bot.send_photo(chat_id, post["file_id"], caption=caption)
+                    await app.bot.send_photo(chat_id, post["file_id"], caption=post.get("caption", ""))
                 elif post["type"] == "video":
-                    caption = post.get("caption", "") + copyright_text
-                    await app.bot.send_video(chat_id, post["file_id"], caption=caption)
+                    await app.bot.send_video(chat_id, post["file_id"], caption=post.get("caption", ""))
                 elif post["type"] == "document":
-                    caption = post.get("caption", "") + copyright_text
-                    await app.bot.send_document(chat_id, post["file_id"], caption=caption)
+                    await app.bot.send_document(chat_id, post["file_id"], caption=post.get("caption", ""))
             except Exception as e:
                 print(f"[ERROR] Не удалось отправить пост в {chat_id}: {e}")
 
-    data["current_index"] = 0  # Сброс индекса, так как все посты отправлены сразу
-    save_posts(data)
+    # Если хотите очищать очередь после рассылки — раскомментируйте строки ниже:
+    # data["posts"] = []
+    # save_posts(data)
 
 async def scheduler(app):
     while True:
@@ -80,7 +75,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if user_id != ADMIN_ID:
         await update.message.reply_animation(
-            animation="https://i.pinimg.com/originals/bd/44/d9/bd44d9671403e0a74a16db7cc4f58f34.gif",
+            animation="https://system365.pro/wp-content/uploads/2020/11/funkygoose-13.gif",
             caption=(
                 "🔒 Упс! К сожалению, у тебя нет доступа к этому боту.\n\n"
                 "Если нужен доступ или есть вопросы — пиши сюда: @baxti_pm"
@@ -142,7 +137,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif query.data == "clear_queue":
         data["posts"] = []
-        data["current_index"] = 0
         save_posts(data)
         await query.message.edit_text("Очередь очищена.")
         return ConversationHandler.END
@@ -289,4 +283,4 @@ if __name__ == "__main__":
         port=PORT,
         url_path=TOKEN,
         webhook_url=WEBHOOK_URL
-    ) 
+    )
